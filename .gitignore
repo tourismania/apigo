@@ -1,0 +1,42 @@
+# Binaries
+bin/
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Test binary, built with `go test -c`
+*.test
+*.out
+coverage.out
+
+# Go workspace file
+go.work
+
+# Local env
+.env
+.env.local
+.env.*.local
+
+# JWT keys (real ones)
+config/jwt/*.pem
+!config/jwt/.gitkeep
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Air (hot reload)
+tmp/
+.air.toml.bak
+
+# Swagger generated docs
+docs/docs.go
+docs/swagger.json
+docs/swagger.yaml
