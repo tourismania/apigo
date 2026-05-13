@@ -1,10 +1,10 @@
 # Tourismania API (Go)
 
-REST API сервис управления пользователями на Go 1.24, со строгим разделением слоёв (Clean Architecture / DDD).
+REST API сервис управления пользователями на Go 1.26, со строгим разделением слоёв (Clean Architecture / DDD).
 
 ## Стек
 
-- **Go 1.24+**
+- **Go 1.26+**
 - **chi v5** — HTTP роутер
 - **pgx/v5 + sqlc** — PostgreSQL 17
 - **golang-migrate** — миграции 
@@ -73,7 +73,13 @@ go run ./cmd/cli create-user "Ada" "Lovelace" ada@example.com secret
 
 ## Миграции
 
-Использовать [golang-migrate](https://github.com/golang-migrate/migrate):
+Использовать команды описанные в `Makefile`
+
+```
+make migrate-up
+make migrate-down
+make migrate-new
+```
 
 ```bash
 migrate -path=./migrations -database "postgres://root:qwerty123@localhost:5432/tourismania?sslmode=disable" up

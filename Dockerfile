@@ -8,7 +8,7 @@
 # ║  Исходники монтируются снаружи (docker-compose volume),  ║
 # ║  поэтому COPY исходников здесь нет.                      ║
 # ╚══════════════════════════════════════════════════════════╝
-FROM golang:1.25-alpine AS dev
+FROM golang:1.26-alpine AS dev
 
 # Системные утилиты:
 # make    — запуск целей из Makefile (generate, migrate, swag и т.д.).
@@ -24,7 +24,7 @@ RUN apk add --no-cache make openssl
 RUN go install github.com/air-verse/air@latest \
     && go install github.com/go-delve/delve/cmd/dlv@latest \
     && go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest \
-    && go install -tags 'pgx5' github.com/golang-migrate/migrate/v4/cmd/migrate@latest \
+    && go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest \
     && go install github.com/swaggo/swag/cmd/swag@latest
 
 WORKDIR /app
@@ -40,7 +40,7 @@ ENTRYPOINT ["air", "-c", ".air.toml"]
 # ║  Компилируем оба бинарника в изолированном Go-окружении. ║
 # ║  В финальный образ этот слой не попадает.                ║
 # ╚══════════════════════════════════════════════════════════╝
-FROM golang:1.25-alpine AS builder
+FROM golang:1.26-alpine AS builder
 
 # Рабочая директория внутри builder-контейнера
 WORKDIR /src
