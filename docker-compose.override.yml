@@ -1,19 +1,26 @@
-# Dev-only override: source-mount + air hot-reload + open DB port.
+# Dev-only override: source-mount + air hot-reload + Delve debugger.
+# Активируется автоматически: docker compose up (override применяется поверх compose.yml).
 services:
   app:
-    image: cosmtrek/air:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+      # Собираем только dev-stage — builder/runner не трогаем.
+      target: dev
+    image: tourismania-api:dev
     container_name: tourismania_app
-    working_dir: /app
-    entrypoint: ["air", "-c", ".air.toml"]
-    user: "0:0"
+    # Исходники монтируем напрямую — air видит изменения в реальном времени.
     volumes:
       - ./:/app
+      # Кэши вынесены в именованные тома, чтобы не пересобирать модули при каждом up.
       - go-build-cache:/root/.cache/go-build
       - go-mod-cache:/go/pkg/mod
     environment:
       GOFLAGS: "-buildvcs=false"
     ports:
       - "8080:8080"
+      # Delve: подключайся из IDE на localhost:2345 (remote Go debugger).
+      - "2345:2345"
 
 volumes:
   go-build-cache: {}

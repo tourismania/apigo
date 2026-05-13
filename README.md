@@ -1,13 +1,13 @@
 # Tourismania API (Go)
 
-REST API сервис управления пользователями. Порт Symfony 7.3 / PHP 8.4 на Go 1.24, со строгим разделением слоёв (Clean Architecture / DDD).
+REST API сервис управления пользователями на Go 1.24, со строгим разделением слоёв (Clean Architecture / DDD).
 
 ## Стек
 
 - **Go 1.24+**
 - **chi v5** — HTTP роутер
 - **pgx/v5 + sqlc** — PostgreSQL 17
-- **golang-migrate** — миграции
+- **golang-migrate** — миграции 
 - **golang-jwt v5** — JWT (RS256)
 - **go-playground/validator v10** — валидация
 - **segmentio/kafka-go** — публикация доменных событий
@@ -36,10 +36,11 @@ tests/            # unit / integration / application
 
 ## Быстрый старт
 
-### Через docker-compose (рекомендуется)
+### Через docker-compose (не тестировался)
 
 ```bash
 cp .env.example .env
+
 # Сгенерировать JWT-ключи (если ещё не сделано):
 openssl genpkey -algorithm RSA -out config/jwt/private.pem -pkeyopt rsa_keygen_bits:2048
 openssl rsa -pubout -in config/jwt/private.pem -out config/jwt/public.pem
@@ -51,14 +52,6 @@ docker run --rm -v "$(pwd)/migrations:/migrations" --network host \
   -database "postgres://root:qwerty123@localhost:5432/tourismania?sslmode=disable" up
 
 docker-compose up app
-```
-
-### Локально
-
-```bash
-go mod download
-# Запустить миграции (см. выше)
-go run ./cmd/server
 ```
 
 ## Эндпоинты

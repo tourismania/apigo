@@ -24,7 +24,7 @@ services:
       POSTGRES_USER: ${DATABASE_USER:-root}
       POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-qwerty123}
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgres/data
     ports:
       - "5432:5432"
     healthcheck:
