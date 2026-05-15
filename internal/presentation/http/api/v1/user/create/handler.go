@@ -4,24 +4,23 @@ import (
 	"errors"
 	"net/http"
 
-	"api/internal/application/bus"
-	createusercmd "api/internal/application/command/create_user"
+	createuser "api/internal/application/command/create_user"
 	"api/internal/presentation/http/httpx"
 
 	"github.com/go-playground/validator/v10"
 )
 
-// Handler turns HTTP requests into CreateUser commands dispatched to the
-// command bus. Validation, decoding and response shaping live here so
-// the bus / handler stay transport-agnostic.
+// Handler turns HTTP requests into CreateUser commands.
+// Validation, decoding and response shaping live here so the use-case
+// stays transport-agnostic.
 type Handler struct {
-	bus      bus.CommandBus
+	useCase  createuser.UseCase
 	validate *validator.Validate
 }
 
 // NewHandler constructs the handler.
-func NewHandler(b bus.CommandBus, v *validator.Validate) *Handler {
-	return &Handler{bus: b, validate: v}
+func NewHandler(uc createuser.UseCase, v *validator.Validate) *Handler {
+	return &Handler{useCase: uc, validate: v}
 }
 
 // Handle is the http.HandlerFunc.
@@ -49,7 +48,7 @@ func (h *Handler) Handle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	raw, err := h.bus.Dispatch(r.Context(), createusercmd.Command{
+	res, err := h.useCase.Handle(r.Context(), createuser.Command{
 		FirstName: req.FirstName,
 		LastName:  req.LastName,
 		Email:     req.Email,
@@ -57,11 +56,6 @@ func (h *Handler) Handle(w http.ResponseWriter, r *http.Request) {
 	})
 	if err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
-	res, ok := raw.(createusercmd.Result)
-	if !ok {
-		httpx.WriteError(w, http.StatusInternalServerError, "unexpected handler result type")
 		return
 	}
 	httpx.WriteJSON(w, http.StatusCreated, CreateUserResponse{ID: res.ID})

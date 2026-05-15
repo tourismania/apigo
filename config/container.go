@@ -1,15 +1,15 @@
-// Package app is the composition root: it wires every concrete
+// Package config Package app is the composition root: it wires every concrete
 // dependency into a Container that callers (HTTP server, CLI) consume.
 // Keeping it here (rather than inline in main) avoids the duplication
 // you'd otherwise get between cmd/server/main.go and cmd/cli/main.go.
-package app
+package config
 
 import (
+	"api/internal/presentation/http/api/v1/user/create"
+	getmehttp2 "api/internal/presentation/http/api/v1/user/get_me"
 	"context"
 	"fmt"
 
-	"api/config"
-	"api/internal/application/bus"
 	createusercmd "api/internal/application/command/create_user"
 	getmeq "api/internal/application/query/get_me"
 	"api/internal/domain/factory"
@@ -21,8 +21,6 @@ import (
 	pgrepo "api/internal/infrastructure/persistence/postgres/repository"
 	"api/internal/infrastructure/security"
 	loginhttp "api/internal/presentation/http/api/login"
-	createuserhttp "api/internal/presentation/http/api/v1/create_user"
-	getmehttp "api/internal/presentation/http/api/v1/get_me"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -31,7 +29,7 @@ import (
 
 // Container holds every wired collaborator the entrypoints need.
 type Container struct {
-	Cfg *config.Config
+	Cfg *Config
 
 	Pool     *pgxpool.Pool
 	Queries  *db.Queries
@@ -39,12 +37,12 @@ type Container struct {
 	JWT      *auth.Service
 	Validate *validator.Validate
 
-	CommandBus bus.CommandBus
-	QueryBus   bus.QueryBus
+	CreateUserApp *createusercmd.Handler
+	GetMeApp      *getmeq.Handler
 
 	LoginHandler      *loginhttp.Handler
 	CreateUserHandler *createuserhttp.Handler
-	GetMeHandler      *getmehttp.Handler
+	GetMeHandler      *getmehttp2.Handler
 }
 
 // Build constructs the Container.
@@ -52,7 +50,7 @@ type Container struct {
 // The order matters: infrastructure adapters first, then domain
 // services (which depend on those adapters via interfaces), then
 // application handlers, then the buses, then HTTP handlers.
-func Build(ctx context.Context, cfg *config.Config) (*Container, error) {
+func Build(ctx context.Context, cfg *Config) (*Container, error) {
 	pool, err := postgres.NewPool(ctx, cfg.Database.URL())
 	if err != nil {
 		return nil, fmt.Errorf("postgres: %w", err)
@@ -86,20 +84,13 @@ func Build(ctx context.Context, cfg *config.Config) (*Container, error) {
 	createUserApp := createusercmd.NewHandler(userCreator)
 	getMeApp := getmeq.NewHandler(rightsDescriber)
 
-	// Buses & registrations.
-	cmdBus := bus.NewInMemoryCommandBus()
-	bus.RegisterCommand[createusercmd.Command, createusercmd.Result](cmdBus, createUserApp.Handle)
-
-	qBus := bus.NewInMemoryQueryBus()
-	bus.RegisterQuery[getmeq.Query, getmeq.Result](qBus, getMeApp.Handle)
-
 	// Validation.
 	validate := validator.New(validator.WithRequiredStructEnabled())
 
 	// HTTP handlers.
 	loginH := loginhttp.NewHandler(queries, hasher, jwtSvc, validate)
-	createUserH := createuserhttp.NewHandler(cmdBus, validate)
-	getMeH := getmehttp.NewHandler(qBus, getmehttp.NewResolver())
+	createUserH := createuserhttp.NewHandler(createUserApp, validate)
+	getMeH := getmehttp2.NewHandler(getMeApp, getmehttp2.NewResolver())
 
 	return &Container{
 		Cfg:               cfg,
@@ -108,8 +99,8 @@ func Build(ctx context.Context, cfg *config.Config) (*Container, error) {
 		Kafka:             producer,
 		JWT:               jwtSvc,
 		Validate:          validate,
-		CommandBus:        cmdBus,
-		QueryBus:          qBus,
+		CreateUserApp:     createUserApp,
+		GetMeApp:          getMeApp,
 		LoginHandler:      loginH,
 		CreateUserHandler: createUserH,
 		GetMeHandler:      getMeH,

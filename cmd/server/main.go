@@ -19,7 +19,6 @@ import (
 	"time"
 
 	"api/config"
-	appcontainer "api/internal/app"
 	apihttp "api/internal/presentation/http"
 )
 
@@ -44,7 +43,7 @@ func run() error {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	container, err := appcontainer.Build(ctx, cfg)
+	container, err := config.Build(ctx, cfg)
 	if err != nil {
 		return err
 	}

@@ -1,13 +1,12 @@
 package application_test
 
 import (
+	getmehttp2 "api/internal/presentation/http/api/v1/user/get_me"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
-	"api/internal/application/bus"
 	"api/internal/infrastructure/auth"
-	getmehttp "api/internal/presentation/http/api/v1/get_me"
 	custommw "api/internal/presentation/http/middleware"
 
 	"github.com/go-chi/chi/v5"
@@ -23,8 +22,8 @@ func TestGetMe_RequiresAuth(t *testing.T) {
 	// Authorization header is absent.
 	var jwtSvc *auth.Service // nil is fine; never reached.
 
-	queryBus := bus.NewInMemoryQueryBus()
-	handler := getmehttp.NewHandler(queryBus, getmehttp.NewResolver())
+	// nil use-case: the middleware rejects before the handler is invoked.
+	handler := getmehttp2.NewHandler(nil, getmehttp2.NewResolver())
 
 	r := chi.NewRouter()
 	r.Route("/api/v1", func(api chi.Router) {

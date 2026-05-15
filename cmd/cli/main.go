@@ -8,7 +8,6 @@ import (
 	"os"
 
 	"api/config"
-	appcontainer "api/internal/app"
 	clicmd "api/internal/presentation/cli"
 
 	"github.com/spf13/cobra"
@@ -27,7 +26,7 @@ func run() error {
 		return err
 	}
 	ctx := context.Background()
-	container, err := appcontainer.Build(ctx, cfg)
+	container, err := config.Build(ctx, cfg)
 	if err != nil {
 		return err
 	}
@@ -39,6 +38,6 @@ func run() error {
 		SilenceUsage:  true,
 		SilenceErrors: false,
 	}
-	root.AddCommand(clicmd.NewCreateUserCommand(container.CommandBus))
+	root.AddCommand(clicmd.NewCreateUserCommand(container.CreateUserApp))
 	return root.Execute()
 }

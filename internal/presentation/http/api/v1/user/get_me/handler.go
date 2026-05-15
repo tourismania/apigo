@@ -4,22 +4,20 @@ import (
 	"errors"
 	"net/http"
 
-	"api/internal/application/bus"
-	getmeq "api/internal/application/query/get_me"
+	getme "api/internal/application/query/get_me"
 	"api/internal/presentation/http/httpx"
 )
 
 // Handler renders the authenticated user as a JSON document. It is
-// thin — the heavy lifting (rights derivation) lives in the query
-// handler. The handler just maps DTO ↔ query ↔ response.
+// thin — the heavy lifting (rights derivation) lives in the use-case.
 type Handler struct {
-	bus      bus.QueryBus
+	useCase  getme.UseCase
 	resolver *Resolver
 }
 
 // NewHandler constructs the handler.
-func NewHandler(b bus.QueryBus, resolver *Resolver) *Handler {
-	return &Handler{bus: b, resolver: resolver}
+func NewHandler(uc getme.UseCase, resolver *Resolver) *Handler {
+	return &Handler{useCase: uc, resolver: resolver}
 }
 
 // Handle is the http.HandlerFunc.
@@ -48,7 +46,7 @@ func (h *Handler) Handle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	raw, err := h.bus.Dispatch(r.Context(), getmeq.Query{
+	res, err := h.useCase.Handle(r.Context(), getme.Query{
 		ID:        dto.ID,
 		Email:     dto.Email,
 		Phone:     dto.Phone,
@@ -58,11 +56,6 @@ func (h *Handler) Handle(w http.ResponseWriter, r *http.Request) {
 	})
 	if err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
-	res, ok := raw.(getmeq.Result)
-	if !ok {
-		httpx.WriteError(w, http.StatusInternalServerError, "unexpected handler result type")
 		return
 	}
 

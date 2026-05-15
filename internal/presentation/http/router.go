@@ -2,12 +2,12 @@
 package http
 
 import (
+	"api/internal/presentation/http/api/v1/user/create"
+	"api/internal/presentation/http/api/v1/user/get_me"
 	"net/http"
 
 	"api/internal/infrastructure/auth"
 	loginhttp "api/internal/presentation/http/api/login"
-	createuserhttp "api/internal/presentation/http/api/v1/create_user"
-	getmehttp "api/internal/presentation/http/api/v1/get_me"
 	custommw "api/internal/presentation/http/middleware"
 
 	"github.com/go-chi/chi/v5"
@@ -46,13 +46,13 @@ func (rt Routes) Build() http.Handler {
 	r.Route("/api/v1", func(api chi.Router) {
 		api.Use(custommw.JWT(rt.JWT))
 		api.Post("/users", rt.CreateUser.Handle)
-		api.Get("/me", rt.GetMe.Handle)
+		api.Get("/users/me", rt.GetMe.Handle)
 	})
 
 	// Liveness/readiness.
 	r.Get("/healthz", func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte(`{"status":"ok"}`))
+		_, _ = w.Write([]byte(`{"status":"ok123"}`))
 	})
 
 	return r

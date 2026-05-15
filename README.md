@@ -54,22 +54,22 @@ docker run --rm -v "$(pwd)/migrations:/migrations" --network host \
 docker-compose up app
 ```
 
-## Эндпоинты
-
-| Метод | Путь            | Доступ | Описание                         |
-| ----- | --------------- | ------ | -------------------------------- |
-| POST  | /api/login      | public | Логин, возвращает JWT            |
-| POST  | /api/v1/users   | JWT    | Создание пользователя            |
-| GET   | /api/v1/me      | JWT    | Профиль текущего пользователя    |
-| GET   | /api/doc        | public | Swagger UI                       |
-| GET   | /healthz        | public | Healthcheck                      |
-
 ## CLI
 
 ```bash
 go run ./cmd/cli create-user "Ada" "Lovelace" ada@example.com secret
 # → User successfully generated! id=1
 ```
+
+## Endpoints
+
+| Метод | Путь             | Доступ | Описание                         |
+| ----- |------------------| ------ | -------------------------------- |
+| POST  | /api/login       | public | Логин, возвращает JWT            |
+| POST  | /api/v1/users    | JWT    | Создание пользователя            |
+| GET   | /api/v1/users/me | JWT    | Профиль текущего пользователя    |
+| GET   | /api/doc         | public | Swagger UI                       |
+| GET   | /healthz         | public | Healthcheck                      |
 
 ## Миграции
 
